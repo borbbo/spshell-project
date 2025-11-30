@@ -13,7 +13,7 @@ int main()
     char *args[MAX_ARG_LEN];
     int arg_count;
 
-    // 시그널 처리: 쉘 자체가 Ctrl-C에 죽지 않도록 설정 (과제 요구사항 3번)
+    // 시그널 처리: 쉘 자체가 Ctrl-C에 죽지 않도록 설정 
     signal(SIGINT, SIG_IGN);
     signal(SIGQUIT, SIG_IGN);
 
@@ -28,6 +28,8 @@ int main()
         cmd[strcspn(cmd, "\n")] = 0;
         if (strlen(cmd) == 0)
             continue;
+
+        add_history(cmd);
 
         arg_count = tokenize(cmd, args);
         if (arg_count == 0)
@@ -56,7 +58,7 @@ int main()
 int tokenize(char *cmd, char *args[])
 {
     int count = 0;
-    // 파이프(|) 등의 기호를 확실히 구분하기 위해 공백 필수 정책 사용 권장
+    // 파이프(|) 등의 기호를 확실히 구분하기 위해 공백 필수 사용
     char *token = strtok(cmd, " \t");
     while (token != NULL && count < MAX_ARG_LEN - 1)
     {
@@ -203,6 +205,7 @@ void execute_simple_command(char *args[], int is_bg)
             argc++;
         }
 
+        // 우리가 구현한 명령어로 연결 
         if (strcmp(args[0], "ls") == 0)
         {
             do_ls(argc, args);
@@ -254,11 +257,22 @@ void execute_simple_command(char *args[], int is_bg)
             exit(0);
         }
 
+        // history 및 help 명령어 연결
+        else if (strcmp(args[0], "history") == 0) {
+            print_history();
+            exit(0);
+        }
+        else if (strcmp(args[0], "help") == 0) {
+            print_help();
+            exit(0);
+        }
+
+        // 우리가 만든 명령어가 아니면 시스템 명령어 실행
         execvp(args[0], args);
         printf("%s: command not found\n", args[0]);
         exit(1);
     }
-    else
+    else // 부모
     {
         if (is_bg)
             printf("[Background PID: %d]\n", pid);
