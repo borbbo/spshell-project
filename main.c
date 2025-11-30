@@ -19,8 +19,24 @@ int main()
 
     while (1)
     {
-        printf("spshell$ ");
-        fflush(stdout);
+        // --- 프롬프트 디자인 (색상 + 경로) ---
+        char cwd[1024];
+        
+        // 현재 경로(Current Working Directory) 가져오기
+        if (getcwd(cwd, sizeof(cwd)) == NULL) {
+            strcpy(cwd, "unknown"); // 실패 시 unknown 표시
+        }
+        
+        // ANSI Color Code 설명:
+        // \033[1;32m : 밝은 초록색 (spshell 글자)
+        // \033[1;34m : 밝은 파란색 (경로)
+        // \033[0m    : 색상 초기화 (원래대로)
+        
+        // 출력 형식: [spshell:/home/bomin/spshell_project]$ 
+        printf("[\033[1;32mspshell\033[0m:\033[1;34m%s\033[0m]$ ", cwd);
+        
+        fflush(stdout); // 화면에 즉시 출력
+        // ----------------------------------------------
 
         if (fgets(cmd, MAX_CMD_LEN, stdin) == NULL)
             break;
