@@ -8,6 +8,11 @@
 #include <string.h>
 #include <sys/types.h>
 #include <sys/wait.h>
+#include <signal.h>
+#include <fcntl.h>
+#include <sys/stat.h>
+#include <dirent.h>
+#include <errno.h>
 
 // 매크로 상수 정의
 #define MAX_CMD_LEN 1024

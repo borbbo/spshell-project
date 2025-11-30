@@ -158,59 +158,65 @@ void execute_simple_command(char *args[], int is_bg) {
                 args[i] = NULL; break;
             }
         }
+
+	signal(SIGINT, SIG_DFL);
+    	signal(SIGQUIT, SIG_DFL);
+
+	// ★ [수정됨] 인자 개수(argc)를 먼저 정확히 계산합니다.
+    	int argc = 0;
+    	while (args[argc] != NULL) {
+        	argc++;
+    	}
+
+    	// ★ 우리가 구현한 명령어로 연결 (라우팅)
+    	if (strcmp(args[0], "ls") == 0) {
+        	do_ls(argc, args);
+        	exit(0);
+    	}
+    	else if (strcmp(args[0], "pwd") == 0) {
+        	do_pwd(argc, args);
+        	exit(0);
+    	}
+    	else if (strcmp(args[0], "mkdir") == 0) {
+        	do_mkdir(argc, args);
+        	exit(0);
+    	}
+    	else if (strcmp(args[0], "rmdir") == 0) {
+        	do_rmdir(argc, args);
+        	exit(0);
+    	}
+    	else if (strcmp(args[0], "ln") == 0) {
+        	do_ln(argc, args);
+        	exit(0);
+    	}
+    	else if (strcmp(args[0], "cp") == 0) {
+        	do_cp(argc, args);
+        	exit(0);
+    	}
+    	else if (strcmp(args[0], "rm") == 0) {
+        	do_rm(argc, args);
+    	    	exit(0);
+    	}
+    	else if (strcmp(args[0], "mv") == 0) {
+        	do_mv(argc, args);
+        	exit(0);
+    	}
+    	else if (strcmp(args[0], "cat") == 0) {
+        	do_cat(argc, args);
+        	exit(0);
+    	}
+    	else if (strcmp(args[0], "grep") == 0) {
+        	do_grep(argc, args);
+        	exit(0);
+    	}
+
+    	// 우리가 만든 명령어가 아니면 시스템 명령어 실행 (/bin/vi, /bin/date 등)
+    	execvp(args[0], args);
+    	printf("%s: command not found\n", args[0]);
+    	exit(1);
         
-        signal(SIGINT, SIG_DFL);
-        signal(SIGQUIT, SIG_DFL);
-
-        // 우리가 만든 명령어로 연결
-        // cd는 부모 프로세스(위쪽 while문)에서 이미 처리하고 있어서 포함X
-        if (strcmp(args[0], "ls") == 0) {
-            do_ls(0, args); // argc는 편의상 0으로 넘김 (필요시 계산)
-            exit(0);        // 실행 후 자식 프로세스 종료
-        }
-        if (strcmp(args[0], "pwd") == 0) {
-            do_pwd(0, args); 
-            exit(0);        
-        }
-        if (strcmp(args[0], "mkdir") == 0) {
-            do_mkdir(0, args); 
-            exit(0);        
-        }
-        if (strcmp(args[0], "rmdir") == 0) {
-            do_rmdir(0, args); 
-            exit(0);        
-        }
-        if (strcmp(args[0], "ln") == 0) {
-            do_ln(0, args); 
-            exit(0);        
-        }
-        if (strcmp(args[0], "cp") == 0) {
-            do_cp(0, args); 
-            exit(0);        
-        }
-        if (strcmp(args[0], "rm") == 0) {
-            do_rm(0, args); 
-            exit(0);        
-        }
-        if (strcmp(args[0], "mv") == 0) {
-            do_mv(0, args); 
-            exit(0);        
-        }
-        if (strcmp(args[0], "cat") == 0) {
-            do_cat(0, args); 
-            exit(0);        
-        }
-        if (strcmp(args[0], "grep") == 0) {
-            do_grep(0, args); 
-            exit(0);        
-        }
-
-        // 우리가 만든 명령어가 아니면 시스템 명령어 실행
-        execvp(args[0], args);
-        printf("%s: command not found\n", args[0]);
-        exit(1);
-    } else { // 부모
-        if (is_bg) printf("[Background PID: %d]\n", pid);
-        else waitpid(pid, NULL, 0);
-    }
+   } else { // 부모
+       	if (is_bg) printf("[Background PID: %d]\n", pid);
+       	else waitpid(pid, NULL, 0);
+   }
 }
