@@ -1,0 +1,9 @@
+LICENSE
+Makefile
+commands.c
+commands.o
+main.c
+main.o
+spshell
+spshell.h
+test.txt
