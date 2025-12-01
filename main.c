@@ -21,9 +21,10 @@ int main()
     {
         // --- 프롬프트 디자인 (색상 + 경로) ---
         char cwd[1024];
-        
+
         // 현재 경로(Current Working Directory) 가져오기
-        if (getcwd(cwd, sizeof(cwd)) == NULL) {
+        if (getcwd(cwd, sizeof(cwd)) == NULL) 
+        {
             strcpy(cwd, "unknown"); // 실패 시 unknown 표시
         }
         
@@ -151,6 +152,12 @@ void handle_pipe(char *args[], int pipe_idx)
         signal(SIGINT, SIG_DFL);
         signal(SIGQUIT, SIG_DFL);
 
+        // 왼쪽 명령어도 우리가 만든 함수(do_ls 등)로 연결
+        int argc = 0; while(args[argc] != NULL) argc++;
+
+        if (strcmp(args[0], "ls") == 0) { do_ls(argc, args); exit(0); }
+        if (strcmp(args[0], "cat") == 0) { do_cat(argc, args); exit(0); }
+        
         execvp(args[0], args);
         perror("command 1 execution failed");
         exit(1);
@@ -164,8 +171,25 @@ void handle_pipe(char *args[], int pipe_idx)
         close(fd[0]);
         close(fd[1]);
 
+        //  오른쪽 명령어의 리다이렉션(>) 처리 추가
+        for (int i = 0; cmd2[i] != NULL; i++) {
+            if (strcmp(cmd2[i], ">") == 0) {
+                int fd_out = open(cmd2[i+1], O_WRONLY | O_CREAT | O_TRUNC, 0644);
+                dup2(fd_out, STDOUT_FILENO); // 표준 출력을 파일로 변경
+                close(fd_out);
+                cmd2[i] = NULL; // 명령어에서 '>' 제거
+                break;
+            }
+        }
+
         signal(SIGINT, SIG_DFL);
         signal(SIGQUIT, SIG_DFL);
+
+        // 오른쪽 명령어도 우리가 만든 함수(do_grep 등)로 연결
+        int argc2 = 0; while(cmd2[argc2] != NULL) argc2++;
+
+        if (strcmp(cmd2[0], "grep") == 0) { do_grep(argc2, cmd2); exit(0); }
+        if (strcmp(cmd2[0], "wc") == 0) { execvp("wc", cmd2); exit(0); } // wc는 시스템꺼 사용
 
         execvp(cmd2[0], cmd2);
         perror("command 2 execution failed");
